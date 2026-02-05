@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Activity, Shield, Cpu, Terminal, Zap, Radar, Database } from 'lucide-react';
+import { Cpu, Terminal, Radar, Database } from 'lucide-react';
 
 export const ProcessingView: React.FC = () => {
   const [logs, setLogs] = useState<string[]>([]);

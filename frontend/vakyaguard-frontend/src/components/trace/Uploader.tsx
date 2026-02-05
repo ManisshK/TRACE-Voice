@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, FileAudio, X, FolderSearch, Fingerprint } from 'lucide-react';
+import { FileAudio, X, FolderSearch, Fingerprint } from 'lucide-react';
 import { FileData } from '../../types/trace';
 
 interface UploaderProps {

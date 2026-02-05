@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Info, Activity, Shield, Fingerprint, Search, Database, Lock, Globe, Radio, Cpu, Wifi } from 'lucide-react';
+import { Shield, Search, Database, Lock, Globe, Cpu, Wifi } from 'lucide-react';
 
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [timestamp, setTimestamp] = useState(new Date().toISOString());
@@ -18,15 +18,25 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   return (
     <div className="min-h-screen relative overflow-hidden selection:bg-cyan-500 selection:text-white">
-      {/* Background Atmosphere Layers */}
+      {/* Beautiful Gradient Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-gray-900 to-black"></div>
+      <div className="fixed inset-0 bg-gradient-to-tr from-blue-900/20 via-transparent to-orange-900/20"></div>
+      <div className="fixed inset-0 bg-gradient-to-bl from-transparent via-cyan-900/10 to-transparent"></div>
+      
+      {/* Animated Background Layers */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
         {/* Deep colored nebula glows */}
-        <div className="absolute top-[-10%] left-[15%] w-[600px] h-[600px] bg-[#4aa3b8]/10 blur-[140px] rounded-full animate-pulse" />
-        <div className="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] bg-orange-600/5 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '6s' }} />
+        <div className="absolute top-[-10%] left-[15%] w-[600px] h-[600px] bg-gradient-radial from-[#4aa3b8]/20 via-[#4aa3b8]/10 to-transparent blur-[140px] rounded-full animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[10%] w-[500px] h-[500px] bg-gradient-radial from-orange-600/15 via-orange-600/5 to-transparent blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '6s' }} />
+        <div className="absolute top-[30%] right-[20%] w-[400px] h-[400px] bg-gradient-radial from-purple-600/10 via-purple-600/5 to-transparent blur-[100px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
         
         {/* Vertical Data Streams (Decorative) */}
         <div className="absolute top-0 right-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-white/[0.03] to-transparent" />
         <div className="absolute top-0 left-1/4 w-[1px] h-full bg-gradient-to-b from-transparent via-white/[0.03] to-transparent" />
+        
+        {/* Diagonal accent lines */}
+        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-orange-500/20 to-transparent" />
       </div>
 
       {/* Team STRATAGEM Watermark - Fixed Floating */}

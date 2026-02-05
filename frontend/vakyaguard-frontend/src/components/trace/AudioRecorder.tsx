@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Volume2, Timer, AlertCircle, ShieldCheck, Activity, Radio } from 'lucide-react';
+import { Mic, Square, Timer, AlertCircle, ShieldCheck, Activity, Radio } from 'lucide-react';
 import { FileData } from '../../types/trace';
 
 interface AudioRecorderProps {
