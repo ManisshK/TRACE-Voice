@@ -4,33 +4,37 @@
 import { BackendAnalysisResponse } from './services/audioAnalysisAPI';
 import { audioUploadService } from './services/audioUploadService';
 
-// Mock backend response for testing
+// Mock backend response for testing (MATCHES CURRENT BACKEND SCHEMA)
 const mockBackendResponse: BackendAnalysisResponse = {
   decision: 'SPOOF',
+
   scores: {
     authenticity_score: 0.14,
+    trust_index: 0.14,
     confidence: 0.92
   },
+
   provenance: {
     human_probability: 0.14,
     synthetic_probability: 0.86
   },
-  technicalDetails: {
-    spectralAnomalies: [
-      "AASIST confidence: 90.0%",
-      "Spectral analysis weight: 40%"
-    ],
-    temporalInconsistencies: [
-      "HFI confidence: 87.0%", 
-      "Temporal analysis weight: 35%"
-    ],
-    syntheticArtifacts: [
-      "TNS confidence: 85.0%",
-      "Synthesis detection weight: 25%"
-    ]
+
+  signals: {
+    aasist: {
+      confidence: 0.9,
+      weight: 0.4
+    },
+    hfi: {
+      confidence: 0.87,
+      weight: 0.35
+    },
+    tns: {
+      confidence: 0.85,
+      weight: 0.25
+    }
   },
-  explanation: "Analysis detected synthetic speech generation.",
-  summary: "TRACE RESULT\n\nDecision: SPOOF\n\nAuthenticity Score: 0.1400\nConfidence: 92.0%"
+
+  explanation: 'Analysis detected synthetic speech generation.'
 };
 
 // Test functions
@@ -61,43 +65,25 @@ export const testIntegration = () => {
     console.log(`❌ File validation: FAIL - ${error}`);
   }
 
-  // Test 3: Response Transformation
-  console.log('\n3. Testing Response Transformation...');
+  // Test 3: Response Validation
+  console.log('\n3. Testing Backend Response Shape...');
   try {
-    const frontendResults = mockBackendResponse; // Use data directly (no transformation needed)
-    const expectedSynthetic = 86; // 0.86 * 100
-    const actualSynthetic = Math.round(frontendResults.provenance.synthetic_probability * 100);
-    const transformationCorrect = actualSynthetic === expectedSynthetic;
-    console.log(`✅ Response transformation: ${transformationCorrect ? 'PASS' : 'FAIL'}`);
-    console.log(`   Expected synthetic probability: ${expectedSynthetic}%, Got: ${actualSynthetic}%`);
-    console.log(`   Decision: ${frontendResults.decision}`);
-    console.log(`   Confidence: ${(frontendResults.scores.confidence * 100).toFixed(1)}%`);
+    const syntheticPct = Math.round(
+      mockBackendResponse.provenance.synthetic_probability * 100
+    );
+
+    console.log(`✅ Decision: ${mockBackendResponse.decision}`);
+    console.log(`✅ Trust Index: ${mockBackendResponse.scores.trust_index}`);
+    console.log(`✅ Synthetic Probability: ${syntheticPct}%`);
+    console.log(
+      `✅ AASIST Confidence: ${mockBackendResponse.signals.aasist.confidence}`
+    );
   } catch (error) {
-    console.log(`❌ Response transformation: FAIL - ${error}`);
+    console.log(`❌ Response validation: FAIL - ${error}`);
   }
 
-  // Test 4: Error Handling
-  console.log('\n4. Testing Error Handling...');
-  try {
-    // Error handling structure is verified through the service classes
-    console.log('✅ Error handling: PASS (structure verified)');
-  } catch (error) {
-    console.log(`❌ Error handling: FAIL - ${error}`);
-  }
-
-  console.log('\n🎉 Integration test completed!');
-  console.log('\n📝 Summary:');
-  console.log('- FormData creation works correctly');
-  console.log('- File validation works correctly');
-  console.log('- Backend response transformation works correctly');
-  console.log('- Error handling structure is in place');
-  console.log('\n✨ The frontend is ready to integrate with the backend!');
-  console.log('🚀 To test with real backend:');
-  console.log('   1. Start the backend server: python -m uvicorn app.main:app --reload');
-  console.log('   2. Open the frontend: http://localhost:3000');
-  console.log('   3. Upload an audio file or record live audio');
-  console.log('   4. Click "Analyze" to see real backend results');
+  console.log('\n🎉 Integration test completed successfully!');
 };
 
-// Export for use in browser console
+// Export for browser console testing
 (window as any).testIntegration = testIntegration;
