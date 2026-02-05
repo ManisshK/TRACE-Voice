@@ -1,49 +1,88 @@
-from fusion_constants import *
+from typing import Dict, List
 
-def evaluate_speech_authenticity(human_likelihood: float,
-                                synthetic_likelihood: float,
-                                hfi: float,
-                                tns: float,
-                                diffusion_probability: float,
-                                forensic_indicator_count: int,
-                                signal_conflict: bool) -> dict:
-    
-    sas = (0.45 * human_likelihood * 100) + (0.35 * hfi) + (0.20 * tns)
-    sas = max(SCORE_MIN, min(SCORE_MAX, sas))
-    
-    tis = sas
-    
-    if synthetic_likelihood >= SYNTHETIC_LIKELIHOOD_HIGH:
-        tis -= PENALTY_HIGH_SYNTHETIC_LIKELIHOOD
-    
-    if diffusion_probability >= 0.5:
-        tis -= PENALTY_DIFFUSION_SIGNATURE
-    
-    if forensic_indicator_count >= 2:
-        tis -= PENALTY_MULTIPLE_FORENSIC_FLAGS
-    
-    if signal_conflict is True:
-        tis -= PENALTY_SIGNAL_CONFLICT
-    
-    tis = max(SCORE_MIN, min(SCORE_MAX, tis))
-    
-    if tis >= TRUST_THRESHOLD_HUMAN and synthetic_likelihood < SYNTHETIC_LIKELIHOOD_LOW:
-        verdict = "Human Speech Verified"
-    elif tis <= TRUST_THRESHOLD_SYNTHETIC or synthetic_likelihood >= SYNTHETIC_LIKELIHOOD_HIGH:
-        verdict = "Synthetic Speech Detected"
+
+def evaluate_fusion(
+    aasist_confidence: float,
+    hfi_confidence: float,
+    tns_confidence: float
+) -> Dict:
+    """
+    Explainable decision fusion engine (locked v1)
+    All inputs must be in range [0, 1]
+    """
+
+    # -------------------------------
+    # Fixed, explainable weights
+    # -------------------------------
+    weights = {
+        "aasist": 0.40,
+        "hfi": 0.35,
+        "tns": 0.25
+    }
+
+    # -------------------------------
+    # Base authenticity score
+    # -------------------------------
+    authenticity_score = (
+        weights["aasist"] * aasist_confidence +
+        weights["hfi"] * hfi_confidence +
+        weights["tns"] * tns_confidence
+    )
+
+    trust_index = authenticity_score
+    explanation: List[str] = []
+
+    scores = [aasist_confidence, hfi_confidence, tns_confidence]
+    weak_signals = sum(score < 0.4 for score in scores)
+    spread = max(scores) - min(scores)
+
+    if weak_signals >= 1:
+        trust_index -= 0.15
+        explanation.append(
+            "One or more analysis modules report weak human-likeness indicators."
+        )
+
+    if weak_signals >= 2:
+        trust_index -= 0.20
+        explanation.append(
+            "Multiple independent signals indicate potential synthetic characteristics."
+        )
+
+    if spread > 0.4:
+        trust_index -= 0.10
+        explanation.append(
+            "High disagreement observed between analysis modules."
+        )
+
+    trust_index = max(0.0, min(1.0, trust_index))
+
+    # -------------------------------
+    # Final decision
+    # -------------------------------
+    if trust_index >= 0.75:
+        decision = "AUTHENTIC"
+        explanation.append(
+            "Aggregated evidence strongly supports natural human speech."
+        )
+    elif trust_index <= 0.45:
+        decision = "SYNTHETIC"
+        explanation.append(
+            "Aggregated evidence is consistent with synthetic speech generation."
+        )
     else:
-        verdict = "Inconclusive — Further Analysis Required"
-    
-    if verdict == "Synthetic Speech Detected":
-        decision_confidence = min(CONFIDENCE_MAX_SYNTHETIC, CONFIDENCE_BASE_SYNTHETIC + synthetic_likelihood * 40)
-    elif verdict == "Human Speech Verified":
-        decision_confidence = min(CONFIDENCE_MAX_HUMAN, CONFIDENCE_BASE_HUMAN + tis * 0.5)
-    else:
-        decision_confidence = 45 + abs(tis - 50) * 0.5
-    
+        decision = "UNCERTAIN"
+        explanation.append(
+            "Evidence is inconclusive and requires further analysis."
+        )
+
+    confidence = abs(trust_index - 0.6) * 1.6
+    confidence = max(0.0, min(1.0, confidence))
+
     return {
-        "speech_authenticity_score": sas,
-        "trust_integrity_score": tis,
-        "verdict": verdict,
-        "decision_confidence": decision_confidence
+        "decision": decision,
+        "authenticity_score": round(authenticity_score, 3),
+        "trust_index": round(trust_index, 3),
+        "confidence": round(confidence, 3),
+        "weights": weights,
+        "explanation": explanation
     }
