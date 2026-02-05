@@ -11,7 +11,9 @@ import { AnalysisReport, DetectionResult, FileData } from './types/trace';
 import { Zap, ShieldAlert, Crosshair } from 'lucide-react';
 
 const TraceApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'upload' | 'record' | 'code'>('upload');
+  // 🔧 removed unused setter
+  const [activeTab] = useState<'upload' | 'record' | 'code'>('upload');
+
   const [fileData, setFileData] = useState<FileData | null>(null);
   const [report, setReport] = useState<AnalysisReport | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -62,6 +64,13 @@ const TraceApp: React.FC = () => {
 
         explanation: backendResponse.explanation,
 
+        // ✅ REQUIRED FIELD – FIXED
+        summary: `
+Decision: ${backendResponse.decision}
+Authenticity Score: ${backendResponse.scores.authenticity_score.toFixed(3)}
+Confidence: ${(backendResponse.scores.confidence * 100).toFixed(1)}%
+`.trim(),
+
         scores: {
           authenticity_score: backendResponse.scores.authenticity_score,
           confidence: backendResponse.scores.confidence
@@ -89,6 +98,7 @@ const TraceApp: React.FC = () => {
         setReport(traceReport);
         setIsAnalyzing(false);
       }, 3000);
+
     } catch (err: any) {
       setError(err.message || 'Forensic pipeline error.');
       setIsAnalyzing(false);
