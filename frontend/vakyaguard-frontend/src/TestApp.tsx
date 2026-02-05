@@ -1,51 +1,32 @@
 import React, { useEffect, useState } from 'react';
 
-type BackendResponse = {
-  decision: string;
-  scores: {
-    authenticity_score: number;
-    trust_index: number;
-    confidence: number;
-  };
-  provenance: {
-    human_probability: number;
-    synthetic_probability: number;
-  };
-};
-
 const TestApp: React.FC = () => {
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
-  const [data, setData] = useState<BackendResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
+  const [backendUrl] = useState<string | undefined>(
+    import.meta.env.VITE_BACKEND_URL
+  );
 
   useEffect(() => {
-    const runHealthCheck = async () => {
-      setStatus('loading');
-
+    const checkBackend = async () => {
       try {
-        const res = await fetch(
-          `${import.meta.env.VITE_BACKEND_URL}/health`
-        );
-
-        if (!res.ok) {
-          throw new Error('Backend health check failed');
-        }
-
+        const res = await fetch(`${backendUrl}/health`);
+        if (!res.ok) throw new Error('Health check failed');
         setStatus('success');
-      } catch (err) {
-        setError('Backend not reachable');
+      } catch {
         setStatus('error');
       }
     };
 
-    runHealthCheck();
-  }, []);
+    if (backendUrl) {
+      checkBackend();
+    } else {
+      setStatus('error');
+    }
+  }, [backendUrl]);
 
   return (
     <div className="min-h-screen bg-black text-white p-8">
-      <h1 className="text-6xl font-black text-orange-500 mb-8">
-        TRACE
-      </h1>
+      <h1 className="text-6xl font-black text-orange-500 mb-8">TRACE</h1>
 
       <div className="bg-gray-900 p-6 rounded-lg border border-gray-700 space-y-4">
         <h2 className="text-2xl text-cyan-400">
@@ -53,7 +34,9 @@ const TestApp: React.FC = () => {
         </h2>
 
         {status === 'loading' && (
-          <p className="text-yellow-400">Checking backend status…</p>
+          <p className="text-yellow-400">
+            Checking backend status…
+          </p>
         )}
 
         {status === 'success' && (
@@ -64,9 +47,26 @@ const TestApp: React.FC = () => {
 
         {status === 'error' && (
           <p className="text-red-500">
-            ❌ {error}
+            ❌ Backend not reachable or env not set
           </p>
         )}
 
-        <div className="pt-4 flex gap-4">
-          <div className="w-4 h-
+        <div className="flex gap-4 pt-4">
+          <div className="w-4 h-4 bg-orange-500 rounded-full animate-pulse" />
+          <div className="w-4 h-4 bg-cyan-400 rounded-full animate-ping" />
+          <div className="w-4 h-4 bg-emerald-500 rounded-full animate-spin" />
+        </div>
+
+        <p className="text-gray-400 text-sm pt-4">
+          Backend URL:
+          <br />
+          <span className="text-cyan-300 break-all">
+            {backendUrl ?? 'NOT SET'}
+          </span>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default TestApp;
