@@ -1,12 +1,11 @@
 from fastapi import Header, HTTPException, status
-from app.config import settings
-
+from app.config import get_api_key
 
 def verify_api_key(
     x_api_key: str = Header(..., alias="x-api-key")
 ):
     # Server-side configured API key
-    expected_key = settings.VAKYAGUARD_API_KEY
+    expected_key = get_api_key()
 
     if not expected_key:
         raise HTTPException(
